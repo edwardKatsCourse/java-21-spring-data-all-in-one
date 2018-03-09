@@ -1,0 +1,128 @@
+Let's make it simple!
+For the base part, there is NO need to implement "hard" user management.
+User for different operations may be passed in by user id, like:
+
+localhost:8080/products/buy?productId=1&userId=1
+(userId - is the user who buys the product - requesting user)
+
+Final controllers' methods that should be supported in the base part:
+
+*** USER CONTROLLER ***
+"create user"
+URL: users/create
+METHOD: POST
+
+"add balance"
+URL: /users/balance
+METHOD: PUT
+Note: balance from the request should be added to the existing balance. Do not "set" the balance
+
+*** PRODUCT CONTROLLER ***
+"create product"
+URL: /products/create
+METHOD: POST
+
+"buy product"
+URL: /products/buy?userId=1&productId=1&quantity=1
+METHOD: POST
+REQUEST PARAMS:
+userId - buyer
+productId - which product tries to buy
+quantity = how many products wants to buy
+
+*** update product (optional) ***
+update name
+update product quantity
+update product price
+update product discount
+
+
+*** SEARCH CONTROLLER (optional) ***
+see user purchases
+see user sells (from Purchase where seller is the requesting user id)
+
+*** product search (make sure you always return the List<ProductResponse> ***
+//product response must contain basic seller info (first name, last name and user id)
+
+"search product"
+URL: /products/search?name=product name&categoryId=1&isDescending=true
+METHOD: GET
+REQUEST PARAMS:
+name - the name of the product
+categoryId - get the category id from the database and use it in the search
+isDescending - sort parameter is product name and "isDescending" means the sort order
+
+//Note - create different methods in ProductRepository with different set of parameters.
+//Note 2 - set all the parameters required=false. If none are passed in - use findAll
+
+
+-------------------------------------------------------------------------------------
+EXCEPTIONS TO SUPPORT (all should extend GeneralAPIException):
+- InsufficientBalanceException - on buy request: when the total amount of the purchase
+(product price * quantity > user balance)
+HTTP status 400
+
+- NoSuchProductException - when product with the requested id does not exist
+HTTP status 404
+
+- NotEnoughProductException - when there is such product, but the requested quantity is
+"greater than the actual" (product quantity = 2, requested quantity on purchase = 5)
+400
+
+- InputValidationException - on incorrect request data, violating javax.validation/hibernate.validator constraints
+HTTP status 400
+
+--------------------------------------------------------------------------------------
+
+Additional tasks
+(Additional tasks assume you implement one of them by your choice. If you
+reached this part - the homework is done anyway)
+
+I. RestTemplate client
+Rest client assumes, that you have another main method in the project.
+This main method will be executed when the server is started.
+From JVM perspective - it is completely another program, but we'll reuse the existing
+classes.
+
+The end client should simple up (and replace at some point Postman) data creation
+on the server, creating, for example, a user with different products in one click,
+instead of constructing JSON manually for each request
+
+The client should look like a flow. All the methods in client should be
+"independent".
+
+Basically, they are controllers' mirrors, receiving the same parameters and returning
+the same objects.
+
+The main method should call them sequentially, one by one.
+There are some examples of the methods:
+
+EShopUser createUser(EShopUserRequest)
+EShopUser addBalance(Integer userId, Double balanceToAdd)
+
+ProductResponse createProduct(ProductRequest)
+//ProductResponse and ProductRequest are classes, you'll need to create.
+//Here are just the examples
+
+PurchaseResponse buyProduct(productId, userId, quantity)
+
+
+
+//For methods, like "EShopUser createUser(EShopUserRequest)", consider using
+//simple datatypes and construct the request object inside of the method
+
+//EShopUser createUser(EShopUserRequest) vs EShopUser createUser(String firstName, String lastName, String email)
+
+
+Main should call them one by one.
+The minimal requirement for this task is to perform a chain of
+1. create user A
+2. add product
+3. create user B
+4. add balance for user B
+5. buy product
+
+
+II. Spring security
+Implement spring security flow with user sessions
+(I will update this chapter upon your request)
